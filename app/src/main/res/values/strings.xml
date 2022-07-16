@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Whac-A-Mole</string>
+    <string name="instruction">The goal of the game is that you have to hit the largest number of moles in 30 seconds</string>
+    <string name="title_activity_game">Game</string>
 </resources>
