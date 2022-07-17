@@ -10,6 +10,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.*
@@ -19,20 +20,26 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
-
+import java.util.*
+import kotlin.random.Random
 
 var resultCount:Int=0
 var seconds:Int=0
+var holeId:Int=0
 
-
-class Game : ComponentActivity() {
+class GameActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        resultCount=0
+        seconds=0
+        holeId=0
+
         super.onCreate(savedInstanceState)
         setContent {
             val coroutineScope = rememberCoroutineScope()
             val timer = remember {  mutableStateOf(value = seconds)  }
             val clicksCount = remember{ mutableStateOf(value = resultCount)}
-            val isMole = remember{ mutableStateOf(value = 1)}
+            val isMole = remember{ mutableStateOf(value = 0)}
             Counter(clicksCount = clicksCount, timer = timer)
             MainContent(clicksCount = clicksCount, molePosition = isMole)
             LaunchedEffect(key1 = Unit) {
@@ -41,11 +48,25 @@ class Game : ComponentActivity() {
                        timer.value++
                        seconds=timer.value
                        delay(1000)
-                       val changePage = Intent(this@Game, Result::class.java)
-                       startActivity(changePage)
                    }
+                    val changePage = Intent(this@GameActivity, ResultActivity::class.java)
+                    changePage.putExtra("result", clicksCount.value);
+                    startActivity(changePage)
+                    finish()
+                }
+                coroutineScope.launch() {
+                    var tmp:Int
+                    while (true) {
+                        tmp= (0..8).random()
+                        while (tmp==isMole.value){
+                            tmp=(0..8).random()
+                        }
+                        isMole.value = tmp
+                        delay(500)
+                    }
                 }
             }
+            
         }
     }
 }
@@ -60,24 +81,22 @@ fun MainContent(clicksCount: MutableState<Int>, molePosition: MutableState<Int>)
         for(i in 0..2){
             Column() {
                 for (j in 0..2) {
-                    if(molePosition.value==(i+1)*(j+1)){
-                        Hole(true, clicksCount = clicksCount)
-                    } else Hole(false, clicksCount = clicksCount)
+                    Hole(molePosition, clicksCount = clicksCount)
+                    holeId++
+                }
                 }
             }
         }
     }
-}
 
 @Composable
-fun Hole(isMole:Boolean, clicksCount:MutableState<Int>){
-    val mole = remember { mutableStateOf(value = isMole) }
-
+fun Hole(molePosition: MutableState<Int>, clicksCount:MutableState<Int>){
+    val holeId= remember {  mutableStateOf(value = holeId)  }
+    Log.i("Position", holeId.value.toString())
     IconButton(
         onClick = {
-            if(mole.value){
+            if(molePosition.value==holeId.value){
                 resultCount++
-                mole.value = false
                 clicksCount.value= resultCount
             }
             Log.i("Result", resultCount.toString())
@@ -85,8 +104,8 @@ fun Hole(isMole:Boolean, clicksCount:MutableState<Int>){
         modifier = Modifier.padding(15.dp)
     ) {
         var icon: ImageVector? = null
-        icon = if(mole.value){
-            Icons.Filled.KeyboardArrowUp
+        icon = if(molePosition.value==holeId.value){
+            Icons.Filled.Call
         } else{
             Icons.Filled.KeyboardArrowDown
         }

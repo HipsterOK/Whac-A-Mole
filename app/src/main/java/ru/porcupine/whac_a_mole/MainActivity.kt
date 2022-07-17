@@ -14,11 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ru.porcupine.whac_a_mole.SharedPreference
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var record = 0
+        var record = SharedPreference(context = this@MainActivity).getValueInt("record")
         setContent {
             val context = LocalContext.current
             Column(
@@ -28,8 +29,9 @@ class MainActivity : ComponentActivity() {
             ) {
                 IconButton(
                     onClick = {
-                        val changePage = Intent(this@MainActivity, Game::class.java)
+                        val changePage = Intent(this@MainActivity, GameActivity::class.java)
                         startActivity(changePage)
+                        finish()
                     },
                     modifier = Modifier.padding(15.dp)
 
@@ -52,9 +54,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-@Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
 }
